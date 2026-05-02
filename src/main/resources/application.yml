@@ -1,0 +1,48 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ${projectName}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: ${projectName}
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{requestId:-no-request}] [%X{method:-} %X{path:-}] [%X{deviceIp:-unknown-ip}] %logger{36} - %msg%n"
+  level:
+    com.bancofortaleza.accounts: info
+    org.springframework.web: warn
+
+spring.cloud.openfeign:
+  okhttp:
+    enabled: true
+  client:
+    config:
+      default:
+        connectTimeout: 3000
+        readTimeout: 5000
+        loggerLevel: basic
+      customer-profile:
+        url: https://example.com
+
+support:
+  name: support-service
+  url: https://localhost:8888/support
+  
