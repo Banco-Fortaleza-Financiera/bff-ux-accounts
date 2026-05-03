@@ -1,26 +1,38 @@
-openapi: 3.0.3
+﻿openapi: 3.0.3
 info:
-  title: BFF OpenAPI channel Account
+  title: BFF OpenAPI Channel Account
   version: 1.0.0
   description: API for account management.
+  contact:
+    name: Banco Fortaleza Financiera
+
+servers:
+  - url: /
+    description: Default server.
 
 tags:
   - name: Accounts
     description: Operations related to bank accounts.
+  - name: AccountTypes
+    description: Operations related to bank account types.
 
 security:
   - bearerAuth: []
 
 paths:
-  /channel/accounts:
+  /channel/v1/accounts:
     get:
       tags:
         - Accounts
       summary: List accounts
+      description: Retrieves bank accounts using the submitted filters when provided.
       operationId: listAccounts
       parameters:
         - $ref: '#/components/parameters/XDeviceIpHeader'
         - $ref: '#/components/parameters/XSessionHeader'
+        - $ref: '#/components/parameters/XPageHeader'
+        - $ref: '#/components/parameters/XPageSizeHeader'
+        - $ref: '#/components/parameters/SearchQuery'
         - $ref: '#/components/parameters/IdUserQuery'
         - $ref: '#/components/parameters/IdAccountTypeQuery'
         - $ref: '#/components/parameters/StatusQuery'
@@ -29,6 +41,15 @@ paths:
       responses:
         '200':
           description: Accounts retrieved successfully.
+          headers:
+            x-total-count:
+              $ref: '#/components/headers/XTotalCount'
+            x-page:
+              $ref: '#/components/headers/XPage'
+            x-page-size:
+              $ref: '#/components/headers/XPageSize'
+            x-total-pages:
+              $ref: '#/components/headers/XTotalPages'
           content:
             application/json:
               schema:
@@ -37,6 +58,8 @@ paths:
                   $ref: '#/components/schemas/AccountResponse'
         '404':
           $ref: '#/components/responses/NotFound'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '405':
           $ref: '#/components/responses/MethodNotAllowed'
         '500':
@@ -45,6 +68,7 @@ paths:
       tags:
         - Accounts
       summary: Create account
+      description: Creates a bank account for a user with the requested account type, account number, balance and status.
       operationId: createAccount
       parameters:
         - $ref: '#/components/parameters/XDeviceIpHeader'
@@ -73,11 +97,12 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /channel/accounts/{id}:
+  /channel/v1/accounts/{id}:
     get:
       tags:
         - Accounts
       summary: Get account by id
+      description: Retrieves the bank account that matches the submitted unique identifier.
       operationId: getAccountById
       parameters:
         - $ref: '#/components/parameters/XDeviceIpHeader'
@@ -131,11 +156,12 @@ paths:
           $ref: '#/components/responses/MethodNotAllowed'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /channel/accounts/number/{accountNumber}:
+  /channel/v1/accounts/number/{accountNumber}:
     get:
       tags:
         - Accounts
       summary: Get account by account number
+      description: Retrieves the bank account that matches the submitted account number.
       operationId: getAccountByNumber
       parameters:
         - $ref: '#/components/parameters/XDeviceIpHeader'
@@ -150,6 +176,141 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccountResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /channel/v1/account-types:
+    get:
+      tags:
+        - AccountTypes
+      summary: List account types
+      description: Retrieves bank account types using the submitted filters when provided.
+      operationId: listAccountTypes
+      parameters:
+        - $ref: '#/components/parameters/XDeviceIpHeader'
+        - $ref: '#/components/parameters/XSessionHeader'
+        - $ref: '#/components/parameters/XPageHeader'
+        - $ref: '#/components/parameters/XPageSizeHeader'
+        - $ref: '#/components/parameters/SearchQuery'
+        - $ref: '#/components/parameters/StatusQuery'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Account types retrieved successfully.
+          headers:
+            x-total-count:
+              $ref: '#/components/headers/XTotalCount'
+            x-page:
+              $ref: '#/components/headers/XPage'
+            x-page-size:
+              $ref: '#/components/headers/XPageSize'
+            x-total-pages:
+              $ref: '#/components/headers/XTotalPages'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountTypeResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - AccountTypes
+      summary: Create account type
+      description: Creates a bank account type with the requested name, code and status.
+      operationId: createAccountType
+      parameters:
+        - $ref: '#/components/parameters/XDeviceIpHeader'
+        - $ref: '#/components/parameters/XSessionHeader'
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountTypeCreateRequest'
+      responses:
+        '201':
+          description: Account type created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountTypeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /channel/v1/account-types/{id}:
+    get:
+      tags:
+        - AccountTypes
+      summary: Get account type by id
+      description: Retrieves the bank account type that matches the submitted unique identifier.
+      operationId: getAccountTypeById
+      parameters:
+        - $ref: '#/components/parameters/XDeviceIpHeader'
+        - $ref: '#/components/parameters/XSessionHeader'
+        - $ref: '#/components/parameters/AccountTypeId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Account type retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountTypeResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags:
+        - AccountTypes
+      summary: Update account type status
+      description: Updates the account type status. Use INACTIVE to deactivate an account type.
+      operationId: updateAccountTypeStatus
+      parameters:
+        - $ref: '#/components/parameters/XDeviceIpHeader'
+        - $ref: '#/components/parameters/XSessionHeader'
+        - $ref: '#/components/parameters/AccountTypeId'
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountTypeStatusUpdateRequest'
+      responses:
+        '200':
+          description: Account type status updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountTypeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
         '405':
@@ -188,6 +349,39 @@ components:
         maxLength: 36
         pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
         example: "7f2c1a54-4cf0-4d8c-9b18-2a6a57e7f7f3"
+    XPageHeader:
+      name: x-page
+      in: header
+      required: false
+      description: Page number to retrieve.
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        default: 1
+        example: 1
+    XPageSizeHeader:
+      name: x-page-size
+      in: header
+      required: false
+      description: Maximum number of resources to retrieve per page.
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 100
+        default: 20
+        example: 20
+    SearchQuery:
+      name: search
+      in: query
+      required: false
+      description: Search value used to find partial matches in the backend-defined searchable fields for this resource.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 128
+        example: "001000"
     AccountId:
       name: id
       in: path
@@ -209,6 +403,16 @@ components:
         maxLength: 32
         pattern: '^[0-9]{1,32}$'
         example: "0010001234567890"
+    AccountTypeId:
+      name: id
+      in: path
+      required: true
+      description: Unique account type identifier.
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        example: 1
     IdUserQuery:
       name: idUser
       in: query
@@ -236,6 +440,37 @@ components:
       description: Filters accounts by status.
       schema:
         $ref: '#/components/schemas/Status'
+
+  headers:
+    XTotalCount:
+      description: Total number of resources matching the submitted filters.
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+        example: 125
+    XPage:
+      description: Current page number returned in the response.
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        example: 1
+    XPageSize:
+      description: Maximum number of resources returned per page.
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 100
+        example: 20
+    XTotalPages:
+      description: Total number of pages available for the submitted filters.
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+        example: 7
 
   responses:
     BadRequest:
@@ -316,6 +551,35 @@ components:
       required:
         - status
 
+    AccountTypeCreateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        accountType:
+          type: string
+          minLength: 1
+          maxLength: 32
+          example: SAVINGS
+        accountCode:
+          type: string
+          minLength: 1
+          maxLength: 4
+          example: "1001"
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+        - accountType
+        - accountCode
+
+    AccountTypeStatusUpdateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+        - status
+
     AccountResponse:
       type: object
       additionalProperties: false
@@ -370,6 +634,46 @@ components:
         - balance
         - status
 
+    AccountTypeResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: integer
+          format: int32
+          minimum: 1
+          readOnly: true
+          example: 1
+        accountType:
+          type: string
+          minLength: 1
+          maxLength: 32
+          example: SAVINGS
+        accountCode:
+          type: string
+          minLength: 1
+          maxLength: 4
+          example: "1001"
+        status:
+          $ref: '#/components/schemas/Status'
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+          example: "2026-05-01T16:35:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+          example: "2026-05-01T16:40:00Z"
+      required:
+        - id
+        - accountType
+        - accountCode
+        - status
+
     Error:
       type: object
       additionalProperties: false
@@ -392,3 +696,4 @@ components:
       required:
         - code
         - message
+

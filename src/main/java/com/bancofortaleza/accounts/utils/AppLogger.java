@@ -1,4 +1,4 @@
-package com.bancofortaleza.accounts.shared.logging;
+package com.bancofortaleza.accounts.utils;
 
 import java.util.Map;
 import org.slf4j.Logger;

@@ -1,5 +1,6 @@
-package com.bancofortaleza.accounts.shared.logging;
+package com.bancofortaleza.accounts.configuration;
 
+import com.bancofortaleza.accounts.utils.AppLogger;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

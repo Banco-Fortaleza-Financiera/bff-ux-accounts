@@ -1,4 +1,4 @@
-package com.bancofortaleza.accounts.handler.dto;
+package com.bancofortaleza.accounts.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.Instant;
