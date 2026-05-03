@@ -1,18 +1,17 @@
 package com.bancofortaleza.accounts.services.mapper;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import org.mapstruct.Mapper;
+import org.mapstruct.NullValueMappingStrategy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 
-@Component
-public class OpenApiModelMapper {
+@Mapper(componentModel = "spring", nullValueIterableMappingStrategy = NullValueMappingStrategy.RETURN_DEFAULT)
+public interface OpenApiModelMapper {
 
-    private static final Set<String> HOP_BY_HOP_HEADERS = Set.of(
+    Set<String> HOP_BY_HOP_HEADERS = Set.of(
         HttpHeaders.CONNECTION.toLowerCase(Locale.ROOT),
         HttpHeaders.CONTENT_LENGTH.toLowerCase(Locale.ROOT),
         HttpHeaders.TRANSFER_ENCODING.toLowerCase(Locale.ROOT),
@@ -24,39 +23,74 @@ public class OpenApiModelMapper {
         "upgrade"
     );
 
-    private final ObjectMapper objectMapper;
+    com.bff.services.client.models.Status toClientStatus(com.bff.services.server.models.Status status);
 
-    public OpenApiModelMapper(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
+    com.bff.services.client.models.AccountCreateRequest toClientAccountCreateRequest(
+        com.bff.services.server.models.AccountCreateRequest request
+    );
 
-    public <T> T map(Object source, Class<T> targetType) {
-        if (source == null) {
-            return null;
-        }
-        return objectMapper.convertValue(source, targetType);
-    }
+    com.bff.services.client.models.AccountStatusUpdateRequest toClientAccountStatusUpdateRequest(
+        com.bff.services.server.models.AccountStatusUpdateRequest request
+    );
 
-    public <T> List<T> mapList(Object source, Class<T> targetType) {
-        if (source == null) {
-            return List.of();
-        }
-        JavaType listType = objectMapper.getTypeFactory().constructCollectionType(List.class, targetType);
-        return objectMapper.convertValue(source, listType);
-    }
+    com.bff.services.client.models.AccountTypeCreateRequest toClientAccountTypeCreateRequest(
+        com.bff.services.server.models.AccountTypeCreateRequest request
+    );
 
-    public <T> ResponseEntity<T> mapResponse(ResponseEntity<?> source, Class<T> targetType) {
+    com.bff.services.client.models.AccountTypeStatusUpdateRequest toClientAccountTypeStatusUpdateRequest(
+        com.bff.services.server.models.AccountTypeStatusUpdateRequest request
+    );
+
+    com.bff.services.server.models.AccountResponse toServerAccountResponse(
+        com.bff.services.client.models.AccountResponse response
+    );
+
+    com.bff.services.server.models.AccountTypeResponse toServerAccountTypeResponse(
+        com.bff.services.client.models.AccountTypeResponse response
+    );
+
+    List<com.bff.services.server.models.AccountResponse> toServerAccountResponses(
+        List<com.bff.services.client.models.AccountResponse> responses
+    );
+
+    List<com.bff.services.server.models.AccountTypeResponse> toServerAccountTypeResponses(
+        List<com.bff.services.client.models.AccountTypeResponse> responses
+    );
+
+    default ResponseEntity<com.bff.services.server.models.AccountResponse> mapAccountResponse(
+        ResponseEntity<com.bff.services.client.models.AccountResponse> source
+    ) {
         return ResponseEntity
             .status(source.getStatusCode())
             .headers(sanitizeHeaders(source.getHeaders()))
-            .body(map(source.getBody(), targetType));
+            .body(toServerAccountResponse(source.getBody()));
     }
 
-    public <T> ResponseEntity<List<T>> mapListResponse(ResponseEntity<?> source, Class<T> targetType) {
+    default ResponseEntity<List<com.bff.services.server.models.AccountResponse>> mapAccountListResponse(
+        ResponseEntity<List<com.bff.services.client.models.AccountResponse>> source
+    ) {
         return ResponseEntity
             .status(source.getStatusCode())
             .headers(sanitizeHeaders(source.getHeaders()))
-            .body(mapList(source.getBody(), targetType));
+            .body(toServerAccountResponses(source.getBody()));
+    }
+
+    default ResponseEntity<com.bff.services.server.models.AccountTypeResponse> mapAccountTypeResponse(
+        ResponseEntity<com.bff.services.client.models.AccountTypeResponse> source
+    ) {
+        return ResponseEntity
+            .status(source.getStatusCode())
+            .headers(sanitizeHeaders(source.getHeaders()))
+            .body(toServerAccountTypeResponse(source.getBody()));
+    }
+
+    default ResponseEntity<List<com.bff.services.server.models.AccountTypeResponse>> mapAccountTypeListResponse(
+        ResponseEntity<List<com.bff.services.client.models.AccountTypeResponse>> source
+    ) {
+        return ResponseEntity
+            .status(source.getStatusCode())
+            .headers(sanitizeHeaders(source.getHeaders()))
+            .body(toServerAccountTypeResponses(source.getBody()));
     }
 
     private HttpHeaders sanitizeHeaders(HttpHeaders source) {

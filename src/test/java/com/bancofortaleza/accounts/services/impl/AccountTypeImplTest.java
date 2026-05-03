@@ -47,10 +47,10 @@ class AccountTypeImplTest {
         ResponseEntity<List<AccountTypeResponse>> expectedResponse =
             ResponseEntity.ok(List.of(new AccountTypeResponse().id(1)));
         when(supportHeadersProvider.getAuthenticatedUserId()).thenReturn(USER_ID);
-        when(mapper.map(Status.INACTIVE, com.bff.services.client.models.Status.class)).thenReturn(clientStatus);
+        when(mapper.toClientStatus(Status.INACTIVE)).thenReturn(clientStatus);
         when(supportApiClient.listAccountTypes(DEVICE_IP, SESSION, USER_ID, 1, 20, "sav", clientStatus))
             .thenReturn(clientResponse);
-        when(mapper.mapListResponse(clientResponse, AccountTypeResponse.class)).thenReturn(expectedResponse);
+        when(mapper.mapAccountTypeListResponse(clientResponse)).thenReturn(expectedResponse);
 
         ResponseEntity<List<AccountTypeResponse>> result =
             service.listAccountTypes(DEVICE_IP, SESSION, 1, 20, "sav", Status.INACTIVE);
@@ -69,9 +69,9 @@ class AccountTypeImplTest {
         ResponseEntity<AccountTypeResponse> expectedResponse =
             ResponseEntity.status(HttpStatus.CREATED).body(new AccountTypeResponse().id(5));
         when(supportHeadersProvider.getAuthenticatedUserId()).thenReturn(USER_ID);
-        when(mapper.map(request, com.bff.services.client.models.AccountTypeCreateRequest.class)).thenReturn(clientRequest);
+        when(mapper.toClientAccountTypeCreateRequest(request)).thenReturn(clientRequest);
         when(supportApiClient.createAccountType(DEVICE_IP, SESSION, USER_ID, clientRequest)).thenReturn(clientResponse);
-        when(mapper.mapResponse(clientResponse, AccountTypeResponse.class)).thenReturn(expectedResponse);
+        when(mapper.mapAccountTypeResponse(clientResponse)).thenReturn(expectedResponse);
 
         ResponseEntity<AccountTypeResponse> result = service.createAccountType(DEVICE_IP, SESSION, request);
 
@@ -86,7 +86,7 @@ class AccountTypeImplTest {
         ResponseEntity<AccountTypeResponse> expectedResponse = ResponseEntity.ok(new AccountTypeResponse().id(8));
         when(supportHeadersProvider.getAuthenticatedUserId()).thenReturn(USER_ID);
         when(supportApiClient.getAccountTypeById(DEVICE_IP, SESSION, USER_ID, 8)).thenReturn(clientResponse);
-        when(mapper.mapResponse(clientResponse, AccountTypeResponse.class)).thenReturn(expectedResponse);
+        when(mapper.mapAccountTypeResponse(clientResponse)).thenReturn(expectedResponse);
 
         ResponseEntity<AccountTypeResponse> result = service.getAccountTypeById(DEVICE_IP, SESSION, 8);
 
@@ -103,10 +103,10 @@ class AccountTypeImplTest {
             ResponseEntity.ok(new com.bff.services.client.models.AccountTypeResponse().id(12));
         ResponseEntity<AccountTypeResponse> expectedResponse = ResponseEntity.ok(new AccountTypeResponse().id(12));
         when(supportHeadersProvider.getAuthenticatedUserId()).thenReturn(USER_ID);
-        when(mapper.map(request, com.bff.services.client.models.AccountTypeStatusUpdateRequest.class)).thenReturn(clientRequest);
+        when(mapper.toClientAccountTypeStatusUpdateRequest(request)).thenReturn(clientRequest);
         when(supportApiClient.updateAccountTypeStatus(DEVICE_IP, SESSION, USER_ID, 12, clientRequest))
             .thenReturn(clientResponse);
-        when(mapper.mapResponse(clientResponse, AccountTypeResponse.class)).thenReturn(expectedResponse);
+        when(mapper.mapAccountTypeResponse(clientResponse)).thenReturn(expectedResponse);
 
         ResponseEntity<AccountTypeResponse> result = service.updateAccountTypeStatus(DEVICE_IP, SESSION, 12, request);
 

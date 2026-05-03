@@ -38,9 +38,9 @@ public class accountTypeImpl implements AccountTypeService {
                 xPage,
                 xPageSize,
                 search,
-                mapper.map(status, com.bff.services.client.models.Status.class)
+                mapper.toClientStatus(status)
             );
-        return mapper.mapListResponse(response, AccountTypeResponse.class);
+        return mapper.mapAccountTypeListResponse(response);
     }
 
     @Override
@@ -54,9 +54,9 @@ public class accountTypeImpl implements AccountTypeService {
                 xDeviceIp,
                 xSession,
                 supportHeadersProvider.getAuthenticatedUserId(),
-                mapper.map(accountTypeCreateRequest, com.bff.services.client.models.AccountTypeCreateRequest.class)
+                mapper.toClientAccountTypeCreateRequest(accountTypeCreateRequest)
             );
-        return mapper.mapResponse(response, AccountTypeResponse.class);
+        return mapper.mapAccountTypeResponse(response);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class accountTypeImpl implements AccountTypeService {
                 supportHeadersProvider.getAuthenticatedUserId(),
                 id
             );
-        return mapper.mapResponse(response, AccountTypeResponse.class);
+        return mapper.mapAccountTypeResponse(response);
     }
 
     @Override
@@ -84,11 +84,8 @@ public class accountTypeImpl implements AccountTypeService {
                 xSession,
                 supportHeadersProvider.getAuthenticatedUserId(),
                 id,
-                mapper.map(
-                    accountTypeStatusUpdateRequest,
-                    com.bff.services.client.models.AccountTypeStatusUpdateRequest.class
-                )
+                mapper.toClientAccountTypeStatusUpdateRequest(accountTypeStatusUpdateRequest)
             );
-        return mapper.mapResponse(response, AccountTypeResponse.class);
+        return mapper.mapAccountTypeResponse(response);
     }
 }

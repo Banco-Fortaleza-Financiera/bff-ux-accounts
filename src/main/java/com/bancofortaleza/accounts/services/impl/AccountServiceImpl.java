@@ -41,9 +41,9 @@ public class AccountServiceImpl implements AccountService {
             search,
             idUser,
             idAccountType,
-            mapper.map(status, com.bff.services.client.models.Status.class)
+            mapper.toClientStatus(status)
         );
-        return mapper.mapListResponse(response, AccountResponse.class);
+        return mapper.mapAccountListResponse(response);
     }
 
     @Override
@@ -56,9 +56,9 @@ public class AccountServiceImpl implements AccountService {
             xDeviceIp,
             xSession,
             supportHeadersProvider.getAuthenticatedUserId(),
-            mapper.map(accountCreateRequest, com.bff.services.client.models.AccountCreateRequest.class)
+            mapper.toClientAccountCreateRequest(accountCreateRequest)
         );
-        return mapper.mapResponse(response, AccountResponse.class);
+        return mapper.mapAccountResponse(response);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class AccountServiceImpl implements AccountService {
             supportHeadersProvider.getAuthenticatedUserId(),
             id
         );
-        return mapper.mapResponse(response, AccountResponse.class);
+        return mapper.mapAccountResponse(response);
     }
 
     @Override
@@ -84,9 +84,9 @@ public class AccountServiceImpl implements AccountService {
             xSession,
             supportHeadersProvider.getAuthenticatedUserId(),
             id,
-            mapper.map(accountStatusUpdateRequest, com.bff.services.client.models.AccountStatusUpdateRequest.class)
+            mapper.toClientAccountStatusUpdateRequest(accountStatusUpdateRequest)
         );
-        return mapper.mapResponse(response, AccountResponse.class);
+        return mapper.mapAccountResponse(response);
     }
 
     @Override
@@ -97,6 +97,6 @@ public class AccountServiceImpl implements AccountService {
             supportHeadersProvider.getAuthenticatedUserId(),
             accountNumber
         );
-        return mapper.mapResponse(response, AccountResponse.class);
+        return mapper.mapAccountResponse(response);
     }
 }

@@ -48,10 +48,10 @@ class AccountServiceImplTest {
         ResponseEntity<List<AccountResponse>> expectedResponse =
             ResponseEntity.ok(List.of(new AccountResponse().id(1)));
         when(supportHeadersProvider.getAuthenticatedUserId()).thenReturn(USER_ID);
-        when(mapper.map(Status.ACTIVE, com.bff.services.client.models.Status.class)).thenReturn(clientStatus);
+        when(mapper.toClientStatus(Status.ACTIVE)).thenReturn(clientStatus);
         when(supportApiClient.listAccounts(DEVICE_IP, SESSION, USER_ID, 1, 20, "sav", 10, 2, clientStatus))
             .thenReturn(clientResponse);
-        when(mapper.mapListResponse(clientResponse, AccountResponse.class)).thenReturn(expectedResponse);
+        when(mapper.mapAccountListResponse(clientResponse)).thenReturn(expectedResponse);
 
         ResponseEntity<List<AccountResponse>> result =
             service.listAccounts(DEVICE_IP, SESSION, 1, 20, "sav", 10, 2, Status.ACTIVE);
@@ -70,9 +70,9 @@ class AccountServiceImplTest {
         ResponseEntity<AccountResponse> expectedResponse =
             ResponseEntity.status(HttpStatus.CREATED).body(new AccountResponse().id(5));
         when(supportHeadersProvider.getAuthenticatedUserId()).thenReturn(USER_ID);
-        when(mapper.map(request, com.bff.services.client.models.AccountCreateRequest.class)).thenReturn(clientRequest);
+        when(mapper.toClientAccountCreateRequest(request)).thenReturn(clientRequest);
         when(supportApiClient.createAccount(DEVICE_IP, SESSION, USER_ID, clientRequest)).thenReturn(clientResponse);
-        when(mapper.mapResponse(clientResponse, AccountResponse.class)).thenReturn(expectedResponse);
+        when(mapper.mapAccountResponse(clientResponse)).thenReturn(expectedResponse);
 
         ResponseEntity<AccountResponse> result = service.createAccount(DEVICE_IP, SESSION, request);
 
@@ -87,7 +87,7 @@ class AccountServiceImplTest {
         ResponseEntity<AccountResponse> expectedResponse = ResponseEntity.ok(new AccountResponse().id(8));
         when(supportHeadersProvider.getAuthenticatedUserId()).thenReturn(USER_ID);
         when(supportApiClient.getAccountById(DEVICE_IP, SESSION, USER_ID, 8)).thenReturn(clientResponse);
-        when(mapper.mapResponse(clientResponse, AccountResponse.class)).thenReturn(expectedResponse);
+        when(mapper.mapAccountResponse(clientResponse)).thenReturn(expectedResponse);
 
         ResponseEntity<AccountResponse> result = service.getAccountById(DEVICE_IP, SESSION, 8);
 
@@ -104,9 +104,9 @@ class AccountServiceImplTest {
             ResponseEntity.ok(new com.bff.services.client.models.AccountResponse().id(12));
         ResponseEntity<AccountResponse> expectedResponse = ResponseEntity.ok(new AccountResponse().id(12));
         when(supportHeadersProvider.getAuthenticatedUserId()).thenReturn(USER_ID);
-        when(mapper.map(request, com.bff.services.client.models.AccountStatusUpdateRequest.class)).thenReturn(clientRequest);
+        when(mapper.toClientAccountStatusUpdateRequest(request)).thenReturn(clientRequest);
         when(supportApiClient.updateAccountStatus(DEVICE_IP, SESSION, USER_ID, 12, clientRequest)).thenReturn(clientResponse);
-        when(mapper.mapResponse(clientResponse, AccountResponse.class)).thenReturn(expectedResponse);
+        when(mapper.mapAccountResponse(clientResponse)).thenReturn(expectedResponse);
 
         ResponseEntity<AccountResponse> result = service.updateAccountStatus(DEVICE_IP, SESSION, 12, request);
 
@@ -121,7 +121,7 @@ class AccountServiceImplTest {
         ResponseEntity<AccountResponse> expectedResponse = ResponseEntity.ok(new AccountResponse().accountNumber("123"));
         when(supportHeadersProvider.getAuthenticatedUserId()).thenReturn(USER_ID);
         when(supportApiClient.getAccountByNumber(DEVICE_IP, SESSION, USER_ID, "123")).thenReturn(clientResponse);
-        when(mapper.mapResponse(clientResponse, AccountResponse.class)).thenReturn(expectedResponse);
+        when(mapper.mapAccountResponse(clientResponse)).thenReturn(expectedResponse);
 
         ResponseEntity<AccountResponse> result = service.getAccountByNumber(DEVICE_IP, SESSION, "123");
 
