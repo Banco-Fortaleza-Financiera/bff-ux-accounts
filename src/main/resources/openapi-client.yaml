@@ -515,23 +515,11 @@ components:
           minimum: 1
           nullable: true
           example: 10
-        accountNumber:
-          type: string
-          minLength: 1
-          maxLength: 32
-          pattern: '^[0-9]{1,32}$'
-          example: "0010001234567890"
-        balance:
-          type: number
-          multipleOf: 0.01
-          minimum: 0
-          maximum: 99999999999999999.99
-          example: 1500.75
         status:
           $ref: '#/components/schemas/Status'
       required:
-        - accountNumber
-        - balance
+        - idUser
+        - idAccountType
 
     AccountStatusUpdateRequest:
       type: object

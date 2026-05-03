@@ -17,11 +17,7 @@ public class HttpRequestLoggingFilter extends OncePerRequestFilter {
     private static final String DEVICE_IP_HEADER = "x-device-ip";
 
     @Override
-    protected void doFilterInternal(
-        HttpServletRequest request,
-        HttpServletResponse response,
-        FilterChain filterChain
-    ) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         long startTime = System.currentTimeMillis();
         String method = request.getMethod();
         String path = request.getRequestURI();

@@ -1,5 +1,6 @@
 package com.bancofortaleza.accounts.configuration;
 
+import com.bancofortaleza.accounts.services.TokenValidationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ public class TokenValidationInterceptor implements HandlerInterceptor {
     private static final String DEVICE_IP_HEADER = "x-device-ip";
     private static final String SESSION_HEADER = "x-session";
 
-    private final ObjectProvider<TokenValidationHandler> tokenValidationHandlerProvider;
+    private final ObjectProvider<TokenValidationService> tokenValidationServiceProvider;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -28,15 +29,10 @@ public class TokenValidationInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        TokenValidationHandler tokenValidationHandler = tokenValidationHandlerProvider.getIfAvailable();
-        if (tokenValidationHandler == null) {
-            return true;
-        }
-
-        Integer authenticatedUserId = tokenValidationHandler.validate(
-            request.getHeader(HttpHeaders.AUTHORIZATION),
-            xDeviceIp,
-            xSession
+        Integer authenticatedUserId = tokenValidationServiceProvider.getObject().validate(
+                request.getHeader(HttpHeaders.AUTHORIZATION),
+                xDeviceIp,
+                xSession
         );
         request.setAttribute(AUTHENTICATED_USER_ID_ATTRIBUTE, authenticatedUserId);
         return true;
