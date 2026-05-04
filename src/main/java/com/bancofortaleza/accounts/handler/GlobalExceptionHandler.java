@@ -1,13 +1,20 @@
 package com.bancofortaleza.accounts.handler;
 
 import com.bancofortaleza.accounts.domain.exceptions.ApiException;
-import com.bancofortaleza.accounts.handler.dto.ErrorResponse;
-import com.bancofortaleza.accounts.shared.logging.AppLogger;
+import com.bancofortaleza.accounts.domain.model.ErrorResponse;
+import com.bancofortaleza.accounts.utils.AppLogger;
+import feign.FeignException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -24,6 +31,33 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Set<String> HOP_BY_HOP_HEADERS = Set.of(
+        HttpHeaders.CONNECTION.toLowerCase(Locale.ROOT),
+        HttpHeaders.CONTENT_LENGTH.toLowerCase(Locale.ROOT),
+        HttpHeaders.TRANSFER_ENCODING.toLowerCase(Locale.ROOT),
+        "keep-alive",
+        "proxy-authenticate",
+        "proxy-authorization",
+        "te",
+        "trailer",
+        "upgrade"
+    );
+
+    @ExceptionHandler(FeignException.class)
+    public ResponseEntity<byte[]> handleFeignException(FeignException exception) {
+        int status = exception.status();
+        AppLogger.warn(GlobalExceptionHandler.class, "Downstream service error status={}", status);
+
+        if (status < 100 || status > 599) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
+        }
+
+        return ResponseEntity
+            .status(HttpStatusCode.valueOf(status))
+            .headers(toHttpHeaders(exception.responseHeaders()))
+            .body(exception.content());
+    }
+
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ErrorResponse> handleApiException(ApiException exception, HttpServletRequest request) {
         HttpStatus status = exception.getStatus();
@@ -33,7 +67,13 @@ public class GlobalExceptionHandler {
             status.value(),
             exception.getCode()
         );
-        return buildResponse(status, exception.getCode(), exception.getMessage(), request, List.of());
+        return buildResponse(
+            status,
+            exception.getCode(),
+            exception.getMessage(),
+            request,
+            List.of()
+        );
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -49,13 +89,7 @@ public class GlobalExceptionHandler {
 
         AppLogger.warn(GlobalExceptionHandler.class, "Validation failed errors={}", details.size());
 
-        return buildResponse(
-            HttpStatus.BAD_REQUEST,
-            "VALIDATION_ERROR",
-            "Request validation failed",
-            request,
-            details
-        );
+        return buildResponse(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "Request validation failed", request, details);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -73,13 +107,7 @@ public class GlobalExceptionHandler {
 
         AppLogger.warn(GlobalExceptionHandler.class, "Constraint validation failed errors={}", details.size());
 
-        return buildResponse(
-            HttpStatus.BAD_REQUEST,
-            "VALIDATION_ERROR",
-            "Request validation failed",
-            request,
-            details
-        );
+        return buildResponse(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "Request validation failed", request, details);
     }
 
     @ExceptionHandler({
@@ -88,13 +116,7 @@ public class GlobalExceptionHandler {
     })
     public ResponseEntity<ErrorResponse> handleBadRequest(Exception exception, HttpServletRequest request) {
         AppLogger.warn(GlobalExceptionHandler.class, "Bad request handled: {}", exception.getClass().getSimpleName());
-        return buildResponse(
-            HttpStatus.BAD_REQUEST,
-            "BAD_REQUEST",
-            "Invalid request",
-            request,
-            List.of()
-        );
+        return buildResponse(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "Invalid request", request, List.of());
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
@@ -137,13 +159,7 @@ public class GlobalExceptionHandler {
     })
     public ResponseEntity<ErrorResponse> handleNotFound(Exception exception, HttpServletRequest request) {
         AppLogger.warn(GlobalExceptionHandler.class, "Resource not found: {}", request.getRequestURI());
-        return buildResponse(
-            HttpStatus.NOT_FOUND,
-            "NOT_FOUND",
-            "Resource not found",
-            request,
-            List.of()
-        );
+        return buildResponse(HttpStatus.NOT_FOUND, "NOT_FOUND", "Resource not found", request, List.of());
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
@@ -152,13 +168,7 @@ public class GlobalExceptionHandler {
         HttpServletRequest request
     ) {
         AppLogger.warn(GlobalExceptionHandler.class, "Method not allowed: {}", exception.getMethod());
-        return buildResponse(
-            HttpStatus.METHOD_NOT_ALLOWED,
-            "METHOD_NOT_ALLOWED",
-            "Method not allowed",
-            request,
-            List.of()
-        );
+        return buildResponse(HttpStatus.METHOD_NOT_ALLOWED, "METHOD_NOT_ALLOWED", "Method not allowed", request, List.of());
     }
 
     @ExceptionHandler(Exception.class)
@@ -211,5 +221,19 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(status).body(response);
+    }
+
+    private HttpHeaders toHttpHeaders(Map<String, Collection<String>> responseHeaders) {
+        HttpHeaders headers = new HttpHeaders();
+        responseHeaders.forEach((name, values) -> {
+            if (name != null && values != null && !isHopByHopHeader(name)) {
+                values.forEach(value -> headers.add(name, value));
+            }
+        });
+        return headers;
+    }
+
+    private boolean isHopByHopHeader(String name) {
+        return HOP_BY_HOP_HEADERS.contains(name.toLowerCase(Locale.ROOT));
     }
 }

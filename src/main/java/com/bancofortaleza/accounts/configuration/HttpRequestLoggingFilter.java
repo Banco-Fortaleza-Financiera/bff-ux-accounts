@@ -1,5 +1,6 @@
-package com.bancofortaleza.accounts.shared.logging;
+package com.bancofortaleza.accounts.configuration;
 
+import com.bancofortaleza.accounts.utils.AppLogger;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,11 +17,7 @@ public class HttpRequestLoggingFilter extends OncePerRequestFilter {
     private static final String DEVICE_IP_HEADER = "x-device-ip";
 
     @Override
-    protected void doFilterInternal(
-        HttpServletRequest request,
-        HttpServletResponse response,
-        FilterChain filterChain
-    ) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         long startTime = System.currentTimeMillis();
         String method = request.getMethod();
         String path = request.getRequestURI();
